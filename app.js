@@ -29,7 +29,7 @@
 //   console.log('Portfolio complete! Check out index.html to see the output!');fs.lstat
 // });
 // module.exports = generatePage;
-
+const generatePage = require('./src/page-template');
 const inquirer = require('inquirer');
 const promptUser = () => {
   return inquirer.prompt([
@@ -95,9 +95,16 @@ Add a New Project
   ]);
 };
 promptUser()
-  .then(answers => console.log(answers))
   .then(promptProject)
-  .then(projectAnswers => console.log(projectAnswers));
+  .then(portfolioData => {
+    const pageHTML = generatePage(portfolioData);
+
+    // fs.writeFile('./index.html', pageHTML, err => {
+    //   if (err) throw new Error(err);
+
+    //   console.log('Page created! Check out index.html in this directory to see it!');
+    // });
+  });
 
   // If there's no 'projects' array property, create one
 if (!portfolioData.projects) {
@@ -111,3 +118,45 @@ if (!portfolioData.projects) {
     return portfolioData;
   }
 });
+const generateProjects = projectsArr => {
+  return `
+    <section class="my-3" id="portfolio">
+      <h2 class="text-dark bg-primary p-2 display-inline-block">Work</h2>
+      <div class="flex-row justify-space-between">
+      ${projectsArr
+        .filter(({ feature }) => feature)
+        .map(({ name, description, languages, link }) => {
+          return `
+          <div class="col-12 mb-2 bg-dark text-light p-3">
+            <h3 class="portfolio-item-title text-light">${name}</h3>
+            <h5 class="portfolio-languages">
+              Built With:
+              ${languages.join(', ')}
+            </h5>
+            <p>${description}</p>
+            <a href="${link}" class="btn"><i class="fab fa-github mr-2"></i>View Project on GitHub</a>
+          </div>
+        `;
+        })
+        .join('')}
+
+      ${projectsArr
+        .filter(({ feature }) => !feature)
+        .map(({ name, description, languages, link }) => {
+          return `
+          <div class="col-12 col-md-6 mb-2 bg-dark text-light p-3 flex-column">
+            <h3 class="portfolio-item-title text-light">${name}</h3>
+            <h5 class="portfolio-languages">
+              Built With:
+              ${languages.join(', ')}
+            </h5>
+            <p>${description}</p>
+            <a href="${link}" class="btn mt-auto"><i class="fab fa-github mr-2"></i>View Project on GitHub</a>
+          </div>
+        `;
+        })
+        .join('')}
+      </div>
+    </section>
+  `;
+};
